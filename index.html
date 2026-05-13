@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORÁCULO // GLOBAL MONITORING SYSTEM</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<!-- Scanlines overlay -->
+<div class="scanlines"></div>
+<div class="noise"></div>
+
+<!-- Header -->
+<header class="hdr">
+  <div class="hdr-left">
+    <span class="sys-badge">■ SYSTEM: ONLINE</span>
+    <span class="build">BUILD: 2.0-STABLE // ORÁCULO_IDENTITY</span>
+  </div>
+  <div class="hdr-center">
+    <div class="logo-wrap">
+      <div class="globe-ring"></div>
+      <div class="globe-ring r2"></div>
+      <div class="globe-core">ORÁCULO</div>
+    </div>
+    <div class="sub">GLOBAL MONITORING SYSTEM</div>
+  </div>
+  <div class="hdr-right">
+    <div class="stat-pill"><span class="dot green"></span>SEC/FR: READY</div>
+    <div class="stat-pill"><span class="pulse-icon">⚡</span>LOAD: <span id="load-val">22.4k</span></div>
+    <div class="stat-pill">CORES: <span id="cores-val">128/128</span></div>
+    <div class="operator">👤 Josyel</div>
+  </div>
+</header>
+
+<!-- Main layout -->
+<div class="main-layout">
+
+  <!-- LEFT: Terminal -->
+  <aside class="terminal-panel" id="terminal-panel">
+    <div class="panel-header">
+      <span class="ph-title">▶ TECHNICAL_LOG_STREAM</span>
+      <div class="ph-actions">
+        <button class="tb" onclick="clearTerminal()" title="Clear">✕</button>
+        <button class="tb" onclick="exportLogs()" title="Export">↓</button>
+      </div>
+    </div>
+    <div class="terminal-body" id="terminal-body"></div>
+    <div class="terminal-input-row">
+      <span class="prompt">&gt;_</span>
+      <input type="text" id="terminal-input" class="term-input" placeholder="COMANDO MANUAL..." onkeydown="handleTermCmd(event)">
+    </div>
+    <div class="terminal-footer">
+      <span>LOGS SAVED: <span id="log-count">0</span></span>
+      <span class="dot green"></span>
+      <span>STORAGE: ACTIVE</span>
+    </div>
+  </aside>
+
+  <!-- CENTER: Modules -->
+  <main class="modules-area">
+    <!-- Nav tabs -->
+    <nav class="mod-nav">
+      <button class="mod-tab active" data-mod="recon" onclick="switchMod(this,'recon')">
+        <span class="tab-icon">🔍</span> RECON
+      </button>
+      <button class="mod-tab" data-mod="crawler" onclick="switchMod(this,'crawler')">
+        <span class="tab-icon">🕷️</span> CRAWLER
+      </button>
+      <button class="mod-tab" data-mod="fuzzer" onclick="switchMod(this,'fuzzer')">
+        <span class="tab-icon">💉</span> FUZZER
+      </button>
+      <button class="mod-tab" data-mod="secrets" onclick="switchMod(this,'secrets')">
+        <span class="tab-icon">🔑</span> SECRETS
+      </button>
+      <button class="mod-tab" data-mod="report" onclick="switchMod(this,'report')">
+        <span class="tab-icon">📋</span> REPORT
+      </button>
+      <button class="mod-tab" data-mod="headers" onclick="switchMod(this,'headers')">
+        <span class="tab-icon">🌐</span> HEADERS
+      </button>
+    </nav>
+
+    <!-- MODULE: RECON -->
+    <div class="mod-panel active" id="mod-recon">
+      <div class="mod-desc">
+        <span class="mod-badge">MODULE_01</span>
+        <h2>RECONHECIMENTO AUTOMÁTICO</h2>
+        <p>Analisa um domínio alvo: busca subdomínios públicos, IPs, tecnologias detectadas e gera relatório de superfície de ataque via APIs públicas (HackerTarget, crt.sh, SecurityHeaders).</p>
+      </div>
+      <div class="input-row">
+        <div class="field-wrap">
+          <label>ALVO (DOMAIN)</label>
+          <input type="text" id="recon-target" class="hk-input" placeholder="ex: example.com" value="">
+        </div>
+        <button class="hk-btn" onclick="runRecon()">▶ EXECUTAR RECON</button>
+      </div>
+      <div class="result-grid" id="recon-results">
+        <div class="result-placeholder">
+          <div class="ph-globe"></div>
+          <p>AGUARDANDO ENTRADA DE DADOS...<br>INSIRA UM DOMÍNIO E EXECUTE O SCAN</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE: CRAWLER -->
+    <div class="mod-panel" id="mod-crawler">
+      <div class="mod-desc">
+        <span class="mod-badge">MODULE_03</span>
+        <h2>WEB CRAWLER INTELIGENTE</h2>
+        <p>Mapeia estrutura de um site via API pública: extrai links, detecta tecnologias, identifica endpoints de API e formulários. Usa CommonCrawl + BuiltWith API free tier.</p>
+      </div>
+      <div class="input-row">
+        <div class="field-wrap">
+          <label>URL ALVO</label>
+          <input type="text" id="crawler-target" class="hk-input" placeholder="ex: https://example.com">
+        </div>
+        <div class="field-wrap small">
+          <label>PROFUNDIDADE</label>
+          <select id="crawler-depth" class="hk-select">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <button class="hk-btn" onclick="runCrawler()">▶ CRAWL</button>
+      </div>
+      <div class="result-grid" id="crawler-results">
+        <div class="result-placeholder">
+          <div class="ph-globe"></div>
+          <p>AGUARDANDO URL PARA CRAWLING...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE: FUZZER -->
+    <div class="mod-panel" id="mod-fuzzer">
+      <div class="mod-desc">
+        <span class="mod-badge">MODULE_04</span>
+        <h2>FUZZER DE PARÂMETROS</h2>
+        <p>Gera payloads de SQLi, XSS, SSTI, LFI, SSRF e Open Redirect para uma URL com parâmetros. Analisa vetores de ataque e produz lista de testes prontos para Burp Suite.</p>
+      </div>
+      <div class="input-row">
+        <div class="field-wrap">
+          <label>URL COM PARÂMETROS</label>
+          <input type="text" id="fuzzer-url" class="hk-input" placeholder="ex: https://site.com/page?id=1&name=test">
+        </div>
+        <button class="hk-btn" onclick="runFuzzer()">▶ GERAR PAYLOADS</button>
+      </div>
+      <div class="vuln-selector" id="vuln-selector">
+        <label class="vcheck"><input type="checkbox" value="sqli" checked> SQLi</label>
+        <label class="vcheck"><input type="checkbox" value="xss" checked> XSS</label>
+        <label class="vcheck"><input type="checkbox" value="ssti" checked> SSTI</label>
+        <label class="vcheck"><input type="checkbox" value="lfi" checked> LFI</label>
+        <label class="vcheck"><input type="checkbox" value="ssrf"> SSRF</label>
+        <label class="vcheck"><input type="checkbox" value="redirect"> Open Redirect</label>
+      </div>
+      <div class="result-grid" id="fuzzer-results">
+        <div class="result-placeholder">
+          <div class="ph-globe"></div>
+          <p>INSIRA UMA URL COM PARÂMETROS...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE: SECRETS -->
+    <div class="mod-panel" id="mod-secrets">
+      <div class="mod-desc">
+        <span class="mod-badge">MODULE_05</span>
+        <h2>SECRET SCANNER</h2>
+        <p>Busca em repositórios GitHub públicos por API keys, tokens e secrets expostos. Usa a GitHub Search API (free) com regex patterns do TruffleHog/Gitleaks.</p>
+      </div>
+      <div class="input-row">
+        <div class="field-wrap">
+          <label>ORGANIZAÇÃO / USUÁRIO / REPO</label>
+          <input type="text" id="secrets-target" class="hk-input" placeholder="ex: google ou facebook/react">
+        </div>
+        <div class="field-wrap small">
+          <label>GITHUB TOKEN (opcional)</label>
+          <input type="password" id="gh-token" class="hk-input" placeholder="ghp_xxxx (rate limit)">
+        </div>
+        <button class="hk-btn" onclick="runSecrets()">▶ SCAN SECRETS</button>
+      </div>
+      <div class="result-grid" id="secrets-results">
+        <div class="result-placeholder">
+          <div class="ph-globe"></div>
+          <p>AGUARDANDO ALVO PARA SECRET SCAN...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE: REPORT -->
+    <div class="mod-panel" id="mod-report">
+      <div class="mod-desc">
+        <span class="mod-badge">MODULE_06</span>
+        <h2>GERADOR DE RELATÓRIOS</h2>
+        <p>Gera relatório profissional de vulnerabilidade no padrão HackerOne/Bugcrowd com CVSS score automático, passos de reprodução, impacto e recomendações. Exporta em Markdown.</p>
+      </div>
+      <div class="report-form">
+        <div class="form-row">
+          <div class="field-wrap">
+            <label>TÍTULO DA VULNERABILIDADE</label>
+            <input type="text" id="rep-title" class="hk-input" placeholder="ex: SQL Injection no endpoint /api/users">
+          </div>
+          <div class="field-wrap small">
+            <label>TIPO</label>
+            <select id="rep-type" class="hk-select">
+              <option>SQL Injection</option>
+              <option>XSS</option>
+              <option>SSRF</option>
+              <option>IDOR</option>
+              <option>RCE</option>
+              <option>LFI/RFI</option>
+              <option>Open Redirect</option>
+              <option>CSRF</option>
+              <option>Broken Auth</option>
+              <option>Info Disclosure</option>
+            </select>
+          </div>
+          <div class="field-wrap small">
+            <label>SEVERIDADE</label>
+            <select id="rep-severity" class="hk-select">
+              <option>Critical</option>
+              <option>High</option>
+              <option selected>Medium</option>
+              <option>Low</option>
+              <option>Informational</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-wrap">
+            <label>URL/ENDPOINT AFETADO</label>
+            <input type="text" id="rep-url" class="hk-input" placeholder="https://target.com/api/endpoint">
+          </div>
+          <div class="field-wrap">
+            <label>PROGRAMA (HackerOne/Bugcrowd)</label>
+            <input type="text" id="rep-program" class="hk-input" placeholder="ex: @google ou bugcrowd.com/uber">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-wrap full">
+            <label>PASSOS DE REPRODUÇÃO</label>
+            <textarea id="rep-steps" class="hk-textarea" placeholder="1. Acesse https://...&#10;2. Insira payload...&#10;3. Observe..."></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-wrap full">
+            <label>IMPACTO</label>
+            <textarea id="rep-impact" class="hk-textarea short" placeholder="Descreva o impacto para o negócio..."></textarea>
+          </div>
+        </div>
+        <button class="hk-btn full" onclick="generateReport()">▶ GERAR RELATÓRIO</button>
+      </div>
+      <div class="result-grid" id="report-results"></div>
+    </div>
+
+    <!-- MODULE: HEADERS -->
+    <div class="mod-panel" id="mod-headers">
+      <div class="mod-desc">
+        <span class="mod-badge">MODULE_07</span>
+        <h2>HEADER & CORS ANALYZER</h2>
+        <p>Analisa headers de segurança e configurações CORS de um domínio via SecurityHeaders.com API + análise local. Gera score de segurança e lista de problemas encontrados.</p>
+      </div>
+      <div class="input-row">
+        <div class="field-wrap">
+          <label>URL PARA ANÁLISE</label>
+          <input type="text" id="headers-target" class="hk-input" placeholder="ex: https://example.com">
+        </div>
+        <button class="hk-btn" onclick="runHeaders()">▶ ANALISAR HEADERS</button>
+      </div>
+      <div class="result-grid" id="headers-results">
+        <div class="result-placeholder">
+          <div class="ph-globe"></div>
+          <p>INSIRA UMA URL PARA ANALISAR HEADERS...</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT: Status panel -->
+  <aside class="status-panel">
+    <div class="panel-header"><span class="ph-title">▶ ORACLE_INTEL_CORE</span></div>
+
+    <div class="sp-section">
+      <div class="sp-label">GEO_SYNC</div>
+      <div class="sp-value" id="geo-lat">LAT: --</div>
+      <div class="sp-value" id="geo-lng">LNG: --</div>
+    </div>
+
+    <div class="sp-section">
+      <div class="sp-label">DATA_FLUX</div>
+      <div class="sp-value">RX: <span id="rx-val">4.5 GB/s</span></div>
+      <div class="sp-value">TX: <span id="tx-val">1.2 GB/s</span></div>
+    </div>
+
+    <div class="sp-section">
+      <div class="sp-label">NETWORK_LINKS</div>
+      <div class="net-node"><span>NODE_BERLIN</span><span class="badge green">CONNECTED</span></div>
+      <div class="net-node"><span>NODE_TOKYO</span><span class="badge yellow">STABLE</span></div>
+      <div class="net-node"><span>NODE_SAO_PAULO</span><span class="badge red">RECONNECTING</span></div>
+      <div class="net-node"><span>NODE_NEW_YORK</span><span class="badge green">CONNECTED</span></div>
+    </div>
+
+    <div class="sp-section">
+      <div class="sp-label">PARALLEL_CORE_UNITS</div>
+      <div class="core-grid" id="core-grid"></div>
+    </div>
+
+    <div class="sp-section">
+      <div class="sp-label">RAW_DATA_STREAM</div>
+      <div class="raw-stream" id="raw-stream"></div>
+    </div>
+
+    <div class="sp-bottom">
+      <div class="sp-label">SESSION_ID</div>
+      <div class="sp-value mono" id="session-id">--</div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- Footer -->
+<footer class="ftr">
+  <span>NRITY_LEVEL: ROOT_ENCRYPTION_v8</span>
+  <span>BUILD_REF: <span id="build-ref">--</span></span>
+  <span>SESSION_ID: <span id="ftr-session">--</span></span>
+  <span class="dot green"></span>
+  <span>LINK: ATIVO</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
