@@ -1,9 +1,3 @@
-// ============================================================
-// ORÁCULO — GLOBAL MONITORING SYSTEM
-// app.js — All module logic
-// ============================================================
-
-// ---- STORAGE & LOG SYSTEM ----
 const STORAGE_KEY = 'oraculo_logs';
 let logs = [];
 
@@ -83,7 +77,6 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ---- TABS ----
 function switchMod(btn, mod) {
   document.querySelectorAll('.mod-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mod-panel').forEach(p => p.classList.remove('active'));
@@ -92,7 +85,6 @@ function switchMod(btn, mod) {
   log(`Módulo ativado: ${mod.toUpperCase()}`, 'info', 'NAV');
 }
 
-// ---- MODULE 01: RECON ----
 async function runRecon() {
   const target = document.getElementById('recon-target').value.trim().replace(/^https?:\/\//,'').replace(/\//,'');
   if (!target) { log('RECON: Domínio não informado.', 'warn', 'RECON'); return; }
@@ -102,7 +94,6 @@ async function runRecon() {
   log(`RECON iniciado para: ${target}`, 'info', 'RECON');
 
   try {
-    // 1. DNS via HackerTarget API (free)
     const [subRes, crtRes] = await Promise.allSettled([
       fetch(`https://api.hackertarget.com/hostsearch/?q=${target}`).then(r => r.text()),
       fetch(`https://crt.sh/?q=%25.${target}&output=json`).then(r => r.json()).catch(() => [])
@@ -113,7 +104,6 @@ async function runRecon() {
       subdomains = subRes.value.trim().split('\n').filter(Boolean).map(l => l.split(',')[0]).filter(Boolean);
     }
 
-    // crt.sh subdomains
     let crtSubs = [];
     if (crtRes.status === 'fulfilled' && Array.isArray(crtRes.value)) {
       crtSubs = [...new Set(crtRes.value.map(c => c.name_value).join('\n').split('\n').filter(s => s.includes('.'+target) || s === target))].slice(0,20);
@@ -121,11 +111,9 @@ async function runRecon() {
 
     const allSubs = [...new Set([...subdomains, ...crtSubs])].slice(0, 30);
 
-    // 2. IP lookup via hackertarget
     const ipRes = await fetch(`https://api.hackertarget.com/dnslookup/?q=${target}`).then(r => r.text()).catch(() => '');
     const ips = ipRes.match(/\d{1,3}(?:\.\d{1,3}){3}/g) || [];
 
-    // 3. Whois
     const whoisRaw = await fetch(`https://api.hackertarget.com/whois/?q=${target}`).then(r => r.text()).catch(() => '');
     const registrar = (whoisRaw.match(/Registrar:\s*(.+)/i) || [])[1] || 'N/A';
     const created = (whoisRaw.match(/Creation Date:\s*(.+)/i) || [])[1] || 'N/A';
